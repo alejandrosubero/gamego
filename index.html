@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Simulador de Go Profesional</title>
+<style>
+:root{--cs:40px}
+body{font-family:system-ui,sans-serif;background:#f5f6fa;display:flex;flex-direction:column;align-items:center;padding:20px;margin:0}
+.container{background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,.1);max-width:600px;width:100%;display:flex;flex-direction:column;align-items:center;box-sizing:border-box}
+.tabs{display:flex;gap:5px;margin-bottom:15px;width:100%}
+.tab{flex:1;padding:7px 4px;border:none;background:#eef1f5;color:#4b5563;border-radius:999px;cursor:pointer;font-weight:600;font-size:.74rem;transition:.15s}
+.tab:hover{background:#e1e6ec}
+.tab.active{background:#351b03;color:#fff;box-shadow:0 2px 6px rgba(53,27,3,.35)}
+.opts{display:flex;flex-wrap:wrap;gap:10px;width:100%;margin-bottom:12px;font-size:.85rem;align-items:center}
+.opts select{padding:5px;border-radius:5px;border:1px solid #bbb}
+.desc{background:#f8f9fa;border-left:4px solid #351b03;padding:10px;margin-bottom:15px;width:100%;box-sizing:border-box;font-size:.9rem;min-height:60px}
+.panel{display:flex;justify-content:space-between;width:100%;margin-bottom:15px;font-weight:bold}
+.board-wrapper{position:relative;background:#dfb275;padding:calc(var(--cs)/2);border-radius:8px;box-shadow:inset 0 0 10px rgba(0,0,0,.2);max-width:100%;overflow:auto;box-sizing:content-box}
+.grid-lines{display:grid;border-top:2px solid #4a3319;border-left:2px solid #4a3319;box-sizing:content-box}
+.cell{border-right:2px solid #4a3319;border-bottom:2px solid #4a3319}
+.intersections{position:absolute;top:0;left:0;display:grid}
+.pt{width:var(--cs);height:var(--cs);display:flex;justify-content:center;align-items:center;position:relative;cursor:pointer;z-index:10}
+.pt.h::before{content:'';position:absolute;width:calc(var(--cs)*.2);height:calc(var(--cs)*.2);border-radius:50%;background:#4a3319}
+.pt:hover::after{content:'';width:calc(var(--cs)*.75);height:calc(var(--cs)*.75);border-radius:50%;background:rgba(0,0,0,.1);position:absolute}
+.stone{position:relative;width:calc(var(--cs)*.9);height:calc(var(--cs)*.9);border-radius:50%;z-index:20;pointer-events:none}
+.stone.black{background:radial-gradient(circle at 30% 30%,#4b5563,#111827 75%);box-shadow:0 3px 5px rgba(0,0,0,.4)}
+.stone.white{background:radial-gradient(circle at 30% 30%,#fff,#d1d5db 95%);box-shadow:0 3px 5px rgba(0,0,0,.2);border:1px solid #9ca3af;width:calc(var(--cs)*.85);height:calc(var(--cs)*.85)}
+.stone.last::after{content:'';position:absolute;left:50%;top:50%;width:28%;height:28%;transform:translate(-50%,-50%);border-radius:50%;background:#e74c3c}
+.marker{width:calc(var(--cs)*.25);height:calc(var(--cs)*.25);background:#e74c3c;border-radius:50%;position:absolute;z-index:15;pointer-events:none}
+.btns{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;width:100%;margin-top:14px}
+.btn{flex:0 0 auto;padding:7px 14px;border:none;border-radius:999px;font-weight:600;font-size:.78rem;cursor:pointer;color:#fff;box-shadow:0 2px 5px rgba(0,0,0,.18);transition:transform .1s,filter .15s}
+.btn:hover{filter:brightness(1.15)}.btn:active{transform:scale(.95)}
+.btn.pass{background:#2f3640}.btn.reset{background:#d9534f}.btn.fsb{background:#2f7fc1;display:none}
+#stage{display:flex;flex-direction:column;align-items:center;width:100%}
+#exit{display:none;position:fixed;top:10px;right:10px;z-index:101;width:36px;height:36px;padding:0;border:none;border-radius:50%;background:rgba(47,54,64,.85);color:#fff;font-size:1rem;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+#stage.fs{position:fixed;inset:0;z-index:100;background:#f5f6fa;justify-content:center;gap:12px;padding:8px;box-sizing:border-box}
+#stage.fs #exit{display:block}
+#stage.fs .reset,#stage.fs .fsb{display:none}
+.btn.vb{background:#8e5bd0;display:none}
+#vp{display:none;flex-direction:column;align-items:center;gap:8px;margin-top:12px;font-size:.85rem;text-align:center}
+.vr{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+#stage.vw>.btns{display:none}
+.cx{position:absolute;width:var(--cs);height:var(--cs);z-index:25;pointer-events:none;color:#d9302c;font-weight:900;font-size:calc(var(--cs)*.75);line-height:var(--cs);text-align:center;text-shadow:0 0 3px #fff}
+#stage.fs .btns{margin-top:0}
+#stage.fs .btn.pass{padding:9px 26px;font-size:.9rem}
+</style>
+</head>
+<body>
+<div class="container">
+<h2>Simulador de Go Profesional</h2>
+<div class="tabs">
+<button id="t-free" class="tab active" onclick="setMode('free')">Libre</button>
+<button id="t-bot" class="tab" onclick="setMode('bot')">1 Jugador</button>
+<button id="t-tut" class="tab" onclick="setMode('tut')">Tutorial</button>
+<button id="t-libs" class="tab" onclick="setMode('libs')">Libertades</button>
+<button id="t-cap" class="tab" onclick="setMode('cap')">Captura</button>
+<button id="t-eyes" class="tab" onclick="setMode('eyes')">Dos Ojos</button>
+</div>
+<div class="opts">
+<label>Tablero <select id="sz" onchange="chSize(+this.value)"><option value="9">9×9</option><option value="13">13×13</option><option value="19">19×19</option></select></label>
+<span id="bo" style="display:none">
+<label>Tú juegas con <select id="me" onchange="chBot()"><option value="1">Negras (empiezas)</option><option value="2">Blancas</option></select></label>
+<label>Nivel <select id="lv" onchange="chBot()"><option value="easy">Fácil</option><option value="mid" selected>Medio</option><option value="pro">Pro</option></select></label>
+</span>
+</div>
+<div id="tp" class="opts" style="display:none;justify-content:center"><button class="btn pass" onclick="tgo(-1)">◀ Anterior</button><select id="tl" onchange="lesson(+this.value)"></select><button class="btn pass" onclick="tgo(1)">Siguiente ▶</button></div>
+<div class="desc" id="text"></div>
+<div class="panel"><div id="turn">Turno: Negras</div><div id="score">B: 0 | W: 0</div></div>
+<div id="stage"><button id="exit" onclick="toggleFS()" title="Salir de pantalla completa">✕</button><div class="board-wrapper"><div class="grid-lines" id="lines"></div><div class="intersections" id="pts"></div></div>
+<div id="vp"><div id="vt"></div><div class="vr"><button class="btn pass" onclick="vshow(0)">◀ Antes</button><button class="btn pass" onclick="vshow(1)">Después ▶</button><button class="btn reset" onclick="closeView()">✕ Volver al juego</button></div></div>
+<div class="btns">
+<button class="btn pass" onclick="pass()">⏭ Pasar turno</button>
+<button class="btn reset" onclick="reset()">↻ Reiniciar</button>
+<button id="vb" class="btn vb" onclick="showLast()">👁 Última jugada</button>
+<button id="fsb" class="btn fsb" onclick="toggleFS()">⛶ Pantalla completa</button>
+</div>
+</div>
+</div>
+<script>
+const $=id=>document.getElementById(id),CS={9:40,13:32,19:24},KOMI=7.5;
+let hist=[],view=null,vtm=0,N=9,NB=[],cells=[],board,ko=-1,lastKo=-1,turn=1,mode='free',caps={b:0,w:0},markers=[],last=-1,passes=0,over=false,gen=0,busy=false,me=1,level='mid',pend=0;
+
+/* ---------- Tablero / UI ---------- */
+function buildNB(){NB=[];for(let i=0;i<N*N;i++){const r=(i/N)|0,c=i%N,a=[];if(r>0)a.push(i-N);if(r<N-1)a.push(i+N);if(c>0)a.push(i-1);if(c<N-1)a.push(i+1);NB.push(a)}}
+function hoshi(){const e=N==9?[2,6]:N==13?[3,9]:[3,9,15],h=new Set([(N>>1)*N+(N>>1)]);e.forEach(r=>e.forEach(c=>h.add(r*N+c)));return h}
+function csFor(){
+ const fs=$('stage')&&$('stage').classList.contains('fs');
+ if(fs)return Math.max(14,Math.min(80,Math.floor(Math.min(innerWidth-16,innerHeight-110)/(N+1.3))));
+ return Math.max(14,Math.min(CS[N],Math.floor((innerWidth-80)/(N+1.3))))}
+function setSize(n){
+ N=n;buildNB();const cs=csFor(),w=(N-1)*cs,W=N*cs;
+ document.documentElement.style.setProperty('--cs',cs+'px');$('sz').value=n;
+ const L=$('lines'),P=$('pts');
+ L.style.cssText=`width:${w}px;height:${w}px;grid-template-columns:repeat(${N-1},${cs}px);grid-template-rows:repeat(${N-1},${cs}px)`;
+ L.innerHTML='<div class="cell"></div>'.repeat((N-1)*(N-1));
+ P.style.cssText=`width:${W}px;height:${W}px;grid-template-columns:repeat(${N},${cs}px);grid-template-rows:repeat(${N},${cs}px)`;
+ P.innerHTML='';cells=[];const hs=hoshi();
+ for(let i=0;i<N*N;i++){const d=document.createElement('div');d.className='pt'+(hs.has(i)?' h':'');d.onclick=()=>click(i);P.appendChild(d);cells.push(d)}
+}
+function newGame(){hist=[];view=null;clearTimeout(vtm);$('vp').style.display='none';$('stage').classList.remove('vw');clearTimeout(pend);gen++;busy=false;board=new Int8Array(N*N);ko=-1;turn=1;caps={b:0,w:0};markers=[];last=-1;passes=0;over=false}
+function msg(t){$('text').innerHTML=t}
+function render(){
+ $('turn').innerText=over?'Partida terminada':`Turno: ${turn==1?'Negras':'Blancas'}`+(mode=='bot'?(turn==me?' (tú)':' (bot)'):'');
+ $('score').innerText=`B: ${caps.b} | W: ${caps.w}`;
+ for(let i=0;i<N*N;i++){const el=cells[i];el.innerHTML='';
+  const B=view?view.b:board,li=view?(view.st?view.i:-1):last;
+  if(B[i]){const s=document.createElement('div');s.className='stone '+(B[i]==1?'black':'white')+(i===li?' last':'');el.appendChild(s)}
+  else if(view){if(view.cap.includes(i)){const x=document.createElement('div');x.className='cx';x.textContent='✕';el.appendChild(x)}
+   else if(!view.st&&view.i===i){const m=document.createElement('div');m.className='marker';el.appendChild(m)}}
+  else if(markers.includes(i)){const m=document.createElement('div');m.className='marker';el.appendChild(m)}}
+}
+function chSize(n){setSize(n);setMode(mode)}
+function chBot(){me=+$('me').value;level=$('lv').value;reset()}
+function reset(){mode==='tut'?lesson(tk):setMode(mode)}
+
+/* ---------- Reglas (motor) ---------- */
+function grp(b,i){const col=b[i],st=[i],seen=new Set([i]),lib=new Set();
+ for(let k=0;k<st.length;k++)for(const j of NB[st[k]]){const v=b[j];if(v===0)lib.add(j);else if(v===col&&!seen.has(j)){seen.add(j);st.push(j)}}
+ return{st,lib}}
+// Juega i con color col. Devuelve nº de capturas o -1 si es suicidio (el tablero queda intacto). Fija lastKo.
+function play(b,i,col){
+ if(b[i])return -1;const opp=3-col;b[i]=col;let cap=0,cp=-1;
+ for(const j of NB[i])if(b[j]===opp){const g=grp(b,j);if(g.lib.size===0){for(const s of g.st)b[s]=0;cap+=g.st.length;cp=g.st[0]}}
+ const g=grp(b,i);
+ if(g.lib.size===0){b[i]=0;return -1}
+ lastKo=(cap===1&&g.st.length===1&&g.lib.size===1)?cp:-1;
+ return cap}
+function areaScore(b){let B=0,W=0;const seen=new Uint8Array(N*N);
+ for(let i=0;i<N*N;i++){if(b[i]===1)B++;else if(b[i]===2)W++;else if(!seen[i]){const st=[i];seen[i]=1;let x=0,y=0;
+  for(let k=0;k<st.length;k++)for(const j of NB[st[k]]){if(b[j]===1)x=1;else if(b[j]===2)y=1;else if(!seen[j]){seen[j]=1;st.push(j)}}
+  if(x&&!y)B+=st.length;else if(y&&!x)W+=st.length}}
+ return[B,W]}
+function isEye(b,i,col){
+ for(const j of NB[i])if(b[j]!==col)return false;
+ const r=(i/N)|0,c=i%N;let bad=0;
+ for(const[dr,dc]of[[-1,-1],[-1,1],[1,-1],[1,1]]){const rr=r+dr,cc=c+dc;if(rr>=0&&cc>=0&&rr<N&&cc<N&&b[rr*N+cc]===3-col)bad++}
+ return NB[i].length<4?bad===0:bad<2}
+
+/* ---------- Juego ---------- */
+function click(i){
+ if(busy||over||view||board[i])return;
+ if(mode==='cap'){if(i===40){board[40]=2;board[39]=0;caps.w++;markers=[];render();msg("<strong>¡Capturado!</strong> La piedra negra central se ha quedado sin libertades y fue removida.")}return}
+ if(mode==='bot'&&turn!==me)return;
+ move(i)}
+function move(i){
+ if(board[i])return false;
+ if(i===ko){alert("Regla del Ko: no puedes recapturar de inmediato. Juega en otro lugar primero.");return false}
+ const col=turn,prev=board.slice(),c=play(board,i,col);
+ if(c<0){alert("¡Movimiento Suicidio prohibido!");return false}
+ ko=lastKo;if(col==1)caps.b+=c;else caps.w+=c;
+ last=i;passes=0;turn=3-col;
+ const cap=[];for(let k=0;k<N*N;k++)if(prev[k]&&!board[k])cap.push(k);hist.push({prev,after:board.slice(),col,i,cap});
+ render();afterMove();return true}
+function pass(){if(busy||over||view)return;if(mode==='bot'&&turn!==me)return;doPass()}
+function doPass(){
+ hist.push({pass:true,col:turn});passes++;ko=-1;last=-1;turn=3-turn;
+ if(passes>=2&&(mode==='free'||mode==='bot')){endGame();return}
+ render();afterMove()}
+function endGame(){over=true;const[B,W]=areaScore(board),d=B-W-KOMI;render();
+ msg(`<strong>Fin de la partida.</strong> Negras ${B} · Blancas ${W} (+${KOMI} komi) → ${d>0?'Ganan las <b>Negras</b> por '+d:'Ganan las <b>Blancas</b> por '+(-d)} puntos (conteo por área). Las piedras muertas no se retiran solas: captúralas antes de pasar.`)}
+function afterMove(){if(mode==='bot'&&!over&&turn!==me){clearTimeout(pend);pend=setTimeout(botTurn,60)}}
+
+function setMode(m){
+ mode=m;document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));$(`t-${m}`).classList.add('active');
+ const free=m==='free'||m==='bot';
+ if(!free)setSize(9);else if(!cells.length)setSize(N);
+ $('sz').disabled=!free;$('tp').style.display=m==='tut'?'flex':'none';$('fsb').style.display=m==='bot'?'block':'none';$('vb').style.display=(m==='bot'||m==='free')?'block':'none';$('bo').style.display=m==='bot'?'':'none';
+ me=+$('me').value;level=$('lv').value;newGame();
+ const txt={
+  tut:"",free:"Modo Libre: Las piedras se colocan exactamente en las intersecciones. Mueven primero las negras. Elige el tablero (9×9, 13×13 o 19×19). Capturas, suicidio y ko calculados automáticamente. Dos pases seguidos terminan la partida.",
+  bot:"Modo 1 Jugador: juegas contra la app. Elige tablero, tu color y el nivel (Fácil: juega por intuición básica; Medio: búsqueda corta; Pro: búsqueda Monte Carlo profunda). Se cuenta por área con komi 7.5. Si pasas y la app va ganando, ella también pasa. Usa «👁 Última jugada» para revisar qué hizo el bot (antes/después, con las capturas marcadas) sin alterar la partida.",
+  libs:"Escenario Libertades: Los puntos rojos muestran las libertades (respiraciones). En el centro hay 4, en el borde 3 y en la esquina solo 2. (Escenario fijo en 9×9.)",
+  cap:"Escenario Captura: Las blancas rodean a la negra. Haz clic en el punto rojo (intersección central 4,4) para capturarla. (Escenario fijo en 9×9.)",
+  eyes:"Escenario Dos Ojos JUGABLE (9×9): Eres Blancas. Intenta rellenar los dos ojos del grupo negro de la esquina superior izquierda: ¡el juego no te deja por la regla del suicidio! Luego juega el único hueco del grupo inferior (Un ojo)... ¡ahí sí podrás capturarlo todo!"}[m];
+ msg(txt);
+ const P=(r,c,v)=>board[r*N+c]=v;
+ if(m==='libs'){P(4,4,1);P(4,1,2);P(0,7,1);markers=[[3,4],[5,4],[4,3],[4,5],[4,0],[0,8]].map(([r,c])=>r*N+c)}
+ if(m==='cap'){turn=2;P(4,3,1);P(3,3,2);P(4,2,2);P(5,3,2);markers=[40]}
+ if(m==='eyes'){turn=2;
+  [[0,1],[1,0],[1,1],[1,2],[0,3],[1,3],[5,1],[5,2],[5,3],[6,1],[6,3],[7,1],[7,2],[7,3]].forEach(s=>P(s[0],s[1],1));
+  [[0,4],[1,4],[2,0],[2,1],[2,2],[2,3],[5,0],[6,0],[7,0],[8,1],[8,2],[8,3],[7,4],[6,4],[5,4],[4,1],[4,2],[4,3]].forEach(s=>P(s[0],s[1],2))}
+ if(m==='tut')lesson(0);
+ render();afterMove()}
+
+/* ---------- Inteligencia artificial ---------- */
+function heur(b,i,col){
+ const r=(i/N)|0,c=i%N,l=Math.min(r,c,N-1-r,N-1-c),opp=3-col;
+ let s=[-3,-1,1.5,2][Math.min(l,3)],near=0;
+ for(const j of NB[i]){const v=b[j];if(v){const g=grp(b,j);if(g.lib.size===1)s+=v===opp?4+g.st.length:3+g.st.length*.5;else if(g.lib.size===2&&v===opp)s+=1}}
+ for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){if(Math.abs(dr)+Math.abs(dc)>2)continue;const rr=r+dr,cc=c+dc;if(rr>=0&&cc>=0&&rr<N&&cc<N&&b[rr*N+cc])near++}
+ return s+Math.min(near,4)*.6+Math.random()*.3}
+function cand(b,col,k){const a=[];
+ for(let i=0;i<N*N;i++){if(b[i]||i===k||isEye(b,i,col))continue;const h=heur(b,i,col);if(N>9&&h<-2)continue;a.push([h,i])}
+ return a.sort((x,y)=>y[0]-x[0]).map(x=>x[1])}
+// Política de playout: capturar/salvar cerca de la última jugada, si no aleatoria (sin rellenar ojos propios)
+function pick(b,col,k,l){
+ if(l>=0){const hs=[];for(const j of NB[l])if(b[j]){const g=grp(b,j);if(g.lib.size===1)hs.push([...g.lib][0])}
+  while(hs.length){const x=hs.splice(Math.random()*hs.length|0,1)[0];if(x!==k&&!isEye(b,x,col)&&play(b,x,col)>=0)return x}}
+ const e=[];for(let i=0;i<N*N;i++)if(!b[i]&&i!==k)e.push(i);
+ while(e.length){const j=Math.random()*e.length|0,x=e[j];e[j]=e[e.length-1];e.pop();if(!isEye(b,x,col)&&play(b,x,col)>=0)return x}
+ return -1}
+function rollout(b,col,k,lm){let ps=0,m=0;const mx=N*N*2;
+ while(ps<2&&m++<mx){const mv=pick(b,col,k,lm);if(mv<0){ps++;k=-1;lm=-1}else{ps=0;k=lastKo;lm=mv}col=3-col}
+ const[B,W]=areaScore(b);return B-W>KOMI}
+const nd=(mv,col,p)=>({mv,col,p,ch:[],u:null,w:0,v:0});
+
+function botTurn(){
+ if(over||turn===me||busy)return;
+ const col=3-me,g=++gen;busy=true;
+ if(passes>=1){const[B,W]=areaScore(board),mg=col==1?B-W-KOMI:W+KOMI-B;if(mg>0){busy=false;doPass();return}}
+ if(level==='easy'){
+  let best=-1,bs=-1e9;
+  for(let i=0;i<N*N;i++){if(board[i]||i===ko||isEye(board,i,col))continue;
+   const s=heur(board,i,col)+Math.random()*7;
+   if(s>bs&&play(board.slice(),i,col)>=0){bs=s;best=i}}
+  setTimeout(()=>{if(g===gen)finish(best)},350);return}
+ const pro=level==='pro',TL=pro?{9:3000,13:4500,19:6000}[N]:{9:1200,13:1500,19:2000}[N],MAXI=pro?1e9:{9:450,13:400,19:300}[N];
+ const rb=board.slice(),rko=ko,root=nd(-1,me,null),t0=performance.now();let it=0;
+ function iter(){
+  const b=rb.slice();let k=rko,n=root;
+  for(;;){
+   const nc=3-n.col;if(!n.u)n.u=cand(b,nc,k);
+   if(n.u.length&&(N<10||n.ch.length<5+Math.sqrt(n.v)*1.5)){
+    let mv=-1;while(n.u.length){const m=n.u.shift();if(play(b,m,nc)>=0){mv=m;break}}
+    if(mv>=0){k=lastKo;const c=nd(mv,nc,n);n.ch.push(c);n=c;break}}
+   if(!n.ch.length)break;
+   let bs=-1,bc=null;const ln=Math.log(n.v+1);
+   for(const c of n.ch){const s=c.w/c.v+.55*Math.sqrt(ln/c.v);if(s>bs){bs=s;bc=c}}
+   play(b,bc.mv,bc.col);k=lastKo;n=bc}
+  const bw=rollout(b,3-n.col,k,n.mv);
+  for(let x=n;x;x=x.p){x.v++;if(bw===(x.col===1))x.w++}}
+ function slice(){
+  if(g!==gen)return;
+  const s=performance.now();
+  while(performance.now()-s<30&&it<MAXI&&performance.now()-s+(s-t0)<TL){iter();it++}
+  if(it>=MAXI||performance.now()-t0>=TL){
+   let best=null;for(const c of root.ch)if(!best||c.v>best.v)best=c;
+   finish(best?best.mv:-1)}
+  else{const bc=root.ch.reduce((a,c)=>!a||c.v>a.v?c:a,null);
+   $('turn').innerText=`🤖 Pensando… ${it} simulaciones`+(bc?` · ${Math.round(bc.w/bc.v*100)}%`:'');setTimeout(slice,0)}}
+ setTimeout(slice,30)}
+function finish(mv){busy=false;if(mv<0)doPass();else move(mv)}
+
+function toggleFS(){
+ const s=$('stage');
+ if(!s.classList.contains('fs')){
+  s.classList.add('fs');document.body.style.overflow='hidden';
+  const f=s.requestFullscreen||s.webkitRequestFullscreen;
+  if(f)try{const r=f.call(s);if(r&&r.catch)r.catch(()=>{})}catch(e){}
+  fit()}
+ else exitFS()}
+function exitFS(){
+ $('stage').classList.remove('fs');document.body.style.overflow='';
+ if(document.fullscreenElement||document.webkitFullscreenElement)(document.exitFullscreen||document.webkitExitFullscreen).call(document);
+ fit()}
+function showLast(){
+ if(busy||view)return;
+ let e=null;for(let k=hist.length-1;k>=0;k--)if(mode!=='bot'||hist[k].col!==me){e=hist[k];break}
+ if(!e){alert('Aún no hay jugadas para revisar.');return}
+ view={e,st:0};$('vp').style.display='flex';$('stage').classList.add('vw');
+ vshow(0);vtm=setTimeout(()=>vshow(1),1300)}
+function vshow(st){
+ clearTimeout(vtm);const e=view.e;view.st=st;
+ view.b=e.pass?board:(st?e.after:e.prev);view.i=e.pass?-1:e.i;view.cap=st?(e.cap||[]):[];
+ const who=e.col==1?'Negras':'Blancas',pos=e.pass?'':' en '+'ABCDEFGHJKLMNOPQRST'[e.i%N]+(N-((e.i/N)|0));
+ $('vt').innerHTML=e.pass?`<b>${who}</b> pasaron`:st?`<b>${who}</b> jugaron${pos}`+(e.cap.length?` y <b style="color:#d9302c">capturaron ${e.cap.length} piedra${e.cap.length>1?'s':''}</b> (✕)`:''):`Antes de la jugada de <b>${who}</b>${pos}`;
+ render()}
+function closeView(){clearTimeout(vtm);view=null;$('vp').style.display='none';$('stage').classList.remove('vw');render()}
+function fit(){setSize(N);render()}
+['fullscreenchange','webkitfullscreenchange'].forEach(e=>document.addEventListener(e,()=>{
+ if(!document.fullscreenElement&&!document.webkitFullscreenElement&&$('stage').classList.contains('fs'))exitFS()}));
+let rz;addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(fit,150)});
+let tk=0;
+const wall=(c,v)=>Array.from({length:9},(_,r)=>[r,c,v]);
+const L=[
+{t:"El tablero y el objetivo",d:"Go se juega sobre las <b>intersecciones</b> de las líneas, no dentro de los cuadros. Negras y Blancas se turnan colocando una piedra (empiezan las Negras). <b>Objetivo:</b> rodear más territorio que tu rival. Las piedras no se mueven una vez colocadas; solo desaparecen si son capturadas. Los puntos pequeños del tablero (hoshi) son referencias.",b:[]},
+{t:"Colocar piedras y pasar",d:"Prueba a jugar: haz clic en una intersección vacía. Los turnos alternan solos. Si no quieres o no puedes mejorar tu posición, puedes <b>pasar</b>. Cuando los dos jugadores pasan seguidos, la partida termina y se cuenta (en este simulador, por área con komi 7.5).",b:[]},
+{t:"Libertades",d:"Una <b>libertad</b> es una intersección vacía pegada a una piedra (arriba, abajo, izquierda o derecha, no en diagonal). Los puntos rojos las muestran: una piedra en el <b>centro</b> tiene 4, en el <b>borde</b> 3 y en la <b>esquina</b> solo 2. Piedras del mismo color pegadas forman un grupo y comparten libertades.",b:[[4,2,1],[8,6,1],[0,0,2]],m:[[3,2],[5,2],[4,1],[4,3],[7,6],[8,5],[8,7],[0,1],[1,0]]},
+{t:"Atari y captura",d:"Cuando a una piedra solo le queda <b>una libertad</b> está en <b>atari</b> (amenaza de captura). La piedra blanca del centro está en atari. Juega con Negras en el punto rojo para ocupar su última libertad: ¡la capturas y desaparece!",b:[[4,4,2],[3,4,1],[4,3,1],[5,4,1]],m:[[4,5]]},
+{t:"Capturar un grupo",d:"Los grupos se capturan <b>juntos</b>. El grupo negro de dos piedras solo tiene una libertad. Juegas con Blancas: ocupa el punto rojo y retira las dos piedras de golpe.",turn:2,b:[[4,3,1],[4,4,1],[3,3,2],[3,4,2],[5,3,2],[5,4,2],[4,2,2]],m:[[4,5]]},
+{t:"Escapar de un atari",d:"Tu piedra negra central está en atari. Si Blancas juega en su última libertad la pierdes. Solución: <b>extiende</b> en el punto rojo. El grupo pasa a tener 3 libertades y escapa. Pero cuidado: extender no siempre salva (por ejemplo contra una «escalera»).",b:[[4,4,1],[3,4,2],[4,3,2],[5,4,2]],m:[[4,5]]},
+{t:"Suicidio (prohibido)",d:"No puedes jugar donde tu piedra se quedaría sin libertades, <b>salvo que captures</b> algo al hacerlo. Prueba con Negras en el punto rojo: el simulador lo prohíbe, porque ese punto no tiene libertades y las piedras blancas que lo rodean aún tienen libertades propias.",b:[[3,4,2],[5,4,2],[4,3,2],[4,5,2]],m:[[4,4]]},
+{t:"La regla del Ko",d:"En el ko se puede capturar y recapturar eternamente. Para evitarlo: <b>no puedes recapturar inmediatamente</b> y devolver el tablero a la posición anterior. 1) Juega con Negras en el punto rojo y captura. 2) Intenta recapturar con Blancas en el hueco: el juego lo prohíbe. 3) Primero juega una <i>amenaza</i> en otro sitio; si el rival responde, entonces ya puedes recapturar. Eso son las «amenazas de ko».",b:[[3,4,1],[4,3,1],[5,4,1],[4,4,2],[3,5,2],[5,5,2],[4,6,2]],m:[[4,5]]},
+{t:"Dos ojos: cómo vive un grupo",d:"Un <b>ojo</b> es un hueco interior de tu grupo. Con <b>dos ojos separados</b> el rival nunca puede quitarte la última libertad, porque rellenar cada ojo sería suicidio: el grupo está <b>vivo</b>. Juegas con Blancas: intenta rellenar los ojos del grupo de la esquina (no puedes) y luego captura el grupo de abajo, que solo tiene un ojo.",turn:2,b:[[0,1,1],[1,0,1],[1,1,1],[1,2,1],[0,3,1],[1,3,1],[5,1,1],[5,2,1],[5,3,1],[6,1,1],[6,3,1],[7,1,1],[7,2,1],[7,3,1],[0,4,2],[1,4,2],[2,0,2],[2,1,2],[2,2,2],[2,3,2],[5,0,2],[6,0,2],[7,0,2],[8,1,2],[8,2,2],[8,3,2],[7,4,2],[6,4,2],[5,4,2],[4,1,2],[4,2,2],[4,3,2]],m:[[0,0],[0,2],[6,2]]},
+{t:"Conectar y cortar",d:"Dos piedras en <b>diagonal</b> están unidas solo por dos puntos de corte (rojos). Si el rival juega en uno, tú juegas en el otro y quedan conectadas; si te despistas y ocupa los dos, las separa y las ataca por separado. Con Blancas, intenta cortar: verás que el rival debe responder. Regla práctica: conecta tus grupos débiles y corta los del rival.",turn:2,b:[[3,3,1],[4,4,1]],m:[[3,4],[4,3]]},
+{t:"Estrategia de apertura",d:"Orden de importancia: <b>esquinas → lados → centro</b>. En las esquinas es más fácil hacer territorio y vivir con pocas piedras. Los puntos rojos (3-3 en 9×9) son jugadas clásicas de esquina. Principios: no juegues pegado a la primera línea al inicio, no persigas capturas pequeñas si pierdes algo mayor, ataca los grupos débiles del rival y mantén tus grupos conectados y con espacio para dos ojos.",m:[[2,2],[2,6],[6,2],[6,6],[4,4]]},
+{t:"Territorio y final",d:"Aquí Negras y Blancas se reparten el tablero con dos muros. Los puntos rojos son <b>dame</b> (neutrales): tocan a ambos, no puntúan para nadie y se juegan al final. Cada lado tiene 27 puntos de territorio y 9 piedras (conteo por área = 36 cada uno), así que con el komi de 7.5 ganarían las Blancas. Al final se retiran las piedras muertas y se cuenta.",b:wall(3,1).concat(wall(5,2)),m:wall(4,0).map(x=>[x[0],4])},
+{t:"Tres en línea: el punto vital",d:"Un grupo con un espacio interior de <b>tres puntos en línea</b> solo vive si juega en el <b>punto central</b> (rojo), porque así lo divide en dos ojos. Aquí te toca con Blancas: juega en el centro del espacio y el grupo negro ya no podrá hacer dos ojos, por lo que acabará capturado (si Negras responde en un lado, Blancas rellena el otro y captura todo). Si fuera turno de Negras, jugar ahí le daría vida. Los puntos vitales deciden muchas partidas de vida y muerte.",turn:2,b:[[0,0,1],[0,4,1],[1,0,1],[1,1,1],[1,2,1],[1,3,1],[1,4,1],[2,0,2],[2,1,2],[2,2,2],[2,3,2],[2,4,2],[1,5,2],[0,5,2]],m:[[0,2]]},
+{t:"Hane: rodear por el extremo",d:"El <b>hane</b> es una jugada en diagonal respecto a tu piedra que se curva alrededor de la piedra rival. Sirve para limitar su avance y ganar espacio sin alejarte de tus piedras. Aquí tienes una piedra negra junto a una blanca: prueba el hane en cualquiera de los dos puntos rojos.",b:[[4,4,1],[4,5,2]],m:[[3,5],[5,5]]},
+{t:"Forma: el triángulo vacío",d:"Tres piedras en forma de «L» alrededor de un hueco (el punto rojo) forman un <b>triángulo vacío</b>. Es una forma ineficiente: las piedras se estorban, comparten libertades y ocupan poco espacio. Los jugadores experimentados prefieren estirar con una diagonal o un salto. Buena forma = máxima influencia con pocas piedras.",b:[[3,3,1],[3,4,1],[4,3,1]],m:[[4,4]]},
+{t:"Distancia: saltos y extensiones",d:"Desde una piedra puedes <b>extender</b> el territorio con saltos. Un salto <b>de uno</b> (un hueco entre piedras) es muy sólido; uno <b>de dos</b> da más espacio pero es más fácil de cortar. Los puntos rojos muestran ambos desde la piedra negra. Regla práctica: salta lo máximo que puedas defender.",b:[[2,2,1]],m:[[2,4],[2,5],[4,2],[5,2]]},
+{t:"Sente y gote",d:"Una jugada es <b>sente</b> si obliga al rival a responderla; entonces conservas la iniciativa y puedes jugar otra cosa grande. Es <b>gote</b> si el rival puede ignorarla y jugar donde quiera. Si dos jugadas valen parecido, hay que jugar primero la que mantiene la iniciativa. Truco clásico: usa jugadas sente para mejorar tu posición antes de dejarlas sin responder."},
+{t:"Carrera de libertades",d:"Cuando dos grupos se enfrentan y ninguno puede vivir, gana quien <b>captura primero</b>: se cuentan libertades. Aquí cada piedra tiene 3. Con iguales libertades gana quien mueve primero, siempre que nadie extienda ni gane libertades. Juega con Negras y ataca las libertades de la blanca (3,4), (5,4), (4,5); observa que Blancas puede responder reduciendo las tuyas o extendiendo. Las libertades compartidas pueden dar lugar a un <b>seki</b> (vida mutua).",b:[[4,3,1],[4,4,2]]},
+{t:"Yose: el final de la partida",d:"El <b>yose</b> es la fase final: se cierran los bordes entre territorios. Se juegan primero las jugadas que ganan más puntos y que, a ser posible, son sente. Antes de pasar, comprueba que no queden huecos abiertos entre tu territorio y el del rival, y que tus grupos tengan dos ojos. Pasar demasiado pronto regala puntos."},
+{t:"Consejos para mejorar",d:"1) Aprende <b>vida y muerte</b>: es lo que más rápido sube tu nivel. 2) Ataca los grupos débiles en vez de perseguir territorio. 3) Responde al rival, pero no siempre: pregúntate cuál es la jugada más grande del tablero. 4) No juegues demasiado cerca de la primera línea. 5) Antes de cada jugada revisa las libertades y los ataris de ambos bandos. 6) Juega muchas partidas y repásalas: perder enseña más que ganar."}
+];
+function lesson(k){tk=k;const l=L[k];newGame();turn=l.turn||1;(l.b||[]).forEach(([r,c,v])=>board[r*N+c]=v);markers=(l.m||[]).map(([r,c])=>r*N+c);$('tl').value=k;msg(`<strong>Lección ${k+1}/${L.length}: ${l.t}</strong><br>${l.d}`);render()}
+function tgo(d){lesson(Math.max(0,Math.min(L.length-1,tk+d)))}
+$('tl').innerHTML=L.map((l,i)=>`<option value="${i}">${i+1}. ${l.t}</option>`).join('');
+setMode('free');
+</script>
+</body>
+</html>
