@@ -2,81 +2,112 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Simulador de Go Profesional</title>
 <style>
-:root{--cs:40px}
-body{font-family:system-ui,sans-serif;background:#f5f6fa;display:flex;flex-direction:column;align-items:center;padding:20px;margin:0}
-.container{background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,.1);max-width:600px;width:100%;display:flex;flex-direction:column;align-items:center;box-sizing:border-box}
-.tabs{display:flex;gap:5px;margin-bottom:15px;width:100%}
-.tab{flex:1;padding:7px 4px;border:none;background:#eef1f5;color:#4b5563;border-radius:999px;cursor:pointer;font-weight:600;font-size:.74rem;transition:.15s}
-.tab:hover{background:#e1e6ec}
-.tab.active{background:#351b03;color:#fff;box-shadow:0 2px 6px rgba(53,27,3,.35)}
-.opts{display:flex;flex-wrap:wrap;gap:10px;width:100%;margin-bottom:12px;font-size:.85rem;align-items:center}
-.opts select{padding:5px;border-radius:5px;border:1px solid #bbb}
-.desc{background:#f8f9fa;border-left:4px solid #351b03;padding:10px;margin-bottom:15px;width:100%;box-sizing:border-box;font-size:.9rem;min-height:60px}
-.panel{display:flex;justify-content:space-between;width:100%;margin-bottom:15px;font-weight:bold}
-.board-wrapper{position:relative;background:#dfb275;padding:calc(var(--cs)/2);border-radius:8px;box-shadow:inset 0 0 10px rgba(0,0,0,.2);max-width:100%;overflow:auto;box-sizing:content-box}
-.grid-lines{display:grid;border-top:2px solid #4a3319;border-left:2px solid #4a3319;box-sizing:content-box}
-.cell{border-right:2px solid #4a3319;border-bottom:2px solid #4a3319}
+:root{--cs:40px;--bg:#f2f2f7;--box:#fff;--tx:#000;--tx2:#6c6c70;--fill:rgba(120,120,128,.14);--sep:rgba(60,60,67,.18);--tint:#007aff;--red:#ff3b30;--glass:rgba(249,249,251,.8);--wood:#dfb275}
+@media(prefers-color-scheme:dark){:root{--bg:#000;--box:#1c1c1e;--tx:#fff;--tx2:#98989f;--fill:rgba(120,120,128,.32);--sep:rgba(84,84,88,.6);--tint:#0a84ff;--red:#ff453a;--glass:rgba(40,40,42,.8);--wood:#c49a5e}}
+*{-webkit-tap-highlight-color:transparent;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;-webkit-font-smoothing:antialiased;touch-action:manipulation;padding:calc(56px + env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) calc(100px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+body.lock{overflow:hidden}
+button,select{font-family:inherit}
+#nav{position:fixed;top:0;left:0;right:0;z-index:90;display:flex;align-items:center;justify-content:space-between;padding:calc(6px + env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 6px max(12px,env(safe-area-inset-left));background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:.5px solid var(--sep)}
+.ib{width:40px;height:40px;border:0;border-radius:50%;background:var(--fill);color:var(--tint);font-size:20px;display:flex;align-items:center;justify-content:center;padding:0}
+.ib.sp{visibility:hidden}
+.tt{text-align:center;line-height:1.15}.tt b{display:block;font-size:17px}.tt small{font-size:11px;color:var(--tx2)}
+.container{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.box{background:var(--box);border-radius:14px;padding:12px}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:10px}
+#bo{display:contents}
+.opts label{display:flex;flex-direction:column;gap:4px;font-size:11px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.3px}
+select{width:100%;height:40px;padding:0 28px 0 10px;border:0;border-radius:10px;background:var(--fill) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%238e8e93' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 10px center;-webkit-appearance:none;appearance:none;color:var(--tx);font-size:16px;text-transform:none;letter-spacing:0;font-weight:500}
+select:disabled{opacity:.4}
+#tp{gap:8px;align-items:center}#tp select{flex:1;min-width:0}
+.btn{height:40px;padding:0 14px;border:0;border-radius:10px;background:var(--fill);color:var(--tint);font-size:15px;font-weight:600;white-space:nowrap}
+.btn:active,.fb:active,.mi:active,.ib:active{opacity:.55}
+.btn.reset{color:var(--red)}
+details.box{padding:0}summary{list-style:none;padding:12px 14px;font-weight:600;font-size:15px;display:flex;justify-content:space-between;color:var(--tint)}summary::-webkit-details-marker{display:none}
+summary::after{content:'›';transform:rotate(90deg);transition:.2s}details[open] summary::after{transform:rotate(-90deg)}
+#text{padding:0 14px 14px;font-size:15px;line-height:1.45;color:var(--tx)}
+#stage{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%}
+.panel{display:flex;gap:8px;width:100%;font-weight:600;font-size:14px}
+.panel>div{background:var(--box);border-radius:12px;padding:10px 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#turn{flex:1;min-width:0}
+.bw{position:relative;flex:none;background:var(--wood);border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.25),inset 0 0 0 1px rgba(0,0,0,.15)}
+#lines{position:absolute;left:0;top:0}
 .intersections{position:absolute;top:0;left:0;display:grid}
-.pt{width:var(--cs);height:var(--cs);display:flex;justify-content:center;align-items:center;position:relative;cursor:pointer;z-index:10}
+.pt{width:var(--cs);height:var(--cs);display:flex;justify-content:center;align-items:center;position:relative;cursor:pointer;z-index:10;user-select:none;-webkit-user-select:none}
 .pt.h::before{content:'';position:absolute;width:calc(var(--cs)*.2);height:calc(var(--cs)*.2);border-radius:50%;background:#4a3319}
-.pt:hover::after{content:'';width:calc(var(--cs)*.75);height:calc(var(--cs)*.75);border-radius:50%;background:rgba(0,0,0,.1);position:absolute}
+.pt:active::after{content:'';width:calc(var(--cs)*.75);height:calc(var(--cs)*.75);border-radius:50%;background:rgba(0,0,0,.18);position:absolute}
+@media(hover:hover){.pt:hover::after{content:'';width:calc(var(--cs)*.75);height:calc(var(--cs)*.75);border-radius:50%;background:rgba(0,0,0,.1);position:absolute}}
 .stone{position:relative;width:calc(var(--cs)*.9);height:calc(var(--cs)*.9);border-radius:50%;z-index:20;pointer-events:none}
-.stone.black{background:radial-gradient(circle at 30% 30%,#4b5563,#111827 75%);box-shadow:0 3px 5px rgba(0,0,0,.4)}
-.stone.white{background:radial-gradient(circle at 30% 30%,#fff,#d1d5db 95%);box-shadow:0 3px 5px rgba(0,0,0,.2);border:1px solid #9ca3af;width:calc(var(--cs)*.85);height:calc(var(--cs)*.85)}
+.stone.black{background:radial-gradient(circle at 30% 30%,#4b5563,#111827 75%);box-shadow:0 2px 4px rgba(0,0,0,.45)}
+.stone.white{background:radial-gradient(circle at 30% 30%,#fff,#d1d5db 95%);box-shadow:0 2px 4px rgba(0,0,0,.25);border:1px solid #9ca3af;width:calc(var(--cs)*.85);height:calc(var(--cs)*.85)}
 .stone.last::after{content:'';position:absolute;left:50%;top:50%;width:28%;height:28%;transform:translate(-50%,-50%);border-radius:50%;background:#e74c3c}
 .marker{width:calc(var(--cs)*.25);height:calc(var(--cs)*.25);background:#e74c3c;border-radius:50%;position:absolute;z-index:15;pointer-events:none}
-.btns{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;width:100%;margin-top:14px}
-.btn{flex:0 0 auto;padding:7px 14px;border:none;border-radius:999px;font-weight:600;font-size:.78rem;cursor:pointer;color:#fff;box-shadow:0 2px 5px rgba(0,0,0,.18);transition:transform .1s,filter .15s}
-.btn:hover{filter:brightness(1.15)}.btn:active{transform:scale(.95)}
-.btn.pass{background:#2f3640}.btn.reset{background:#d9534f}.btn.fsb{background:#2f7fc1;display:none}
-#stage{display:flex;flex-direction:column;align-items:center;width:100%}
-#exit{display:none;position:fixed;top:10px;right:10px;z-index:101;width:36px;height:36px;padding:0;border:none;border-radius:50%;background:rgba(47,54,64,.85);color:#fff;font-size:1rem;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.3)}
-#stage.fs{position:fixed;inset:0;z-index:100;background:#f5f6fa;justify-content:center;gap:12px;padding:8px;box-sizing:border-box}
-#stage.fs #exit{display:block}
-#stage.fs .reset,#stage.fs .fsb{display:none}
-.btn.vb{background:#8e5bd0;display:none}
-#vp{display:none;flex-direction:column;align-items:center;gap:8px;margin-top:12px;font-size:.85rem;text-align:center}
-.vr{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-#stage.vw>.btns{display:none}
 .cx{position:absolute;width:var(--cs);height:var(--cs);z-index:25;pointer-events:none;color:#d9302c;font-weight:900;font-size:calc(var(--cs)*.75);line-height:var(--cs);text-align:center;text-shadow:0 0 3px #fff}
-#stage.fs .btns{margin-top:0}
-#stage.fs .btn.pass{padding:9px 26px;font-size:.9rem}
+#vp{display:none;flex-direction:column;align-items:center;gap:8px;width:100%;background:var(--box);border-radius:14px;padding:12px;font-size:14px;text-align:center}
+.vr{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+#exit{display:none;position:fixed;top:calc(10px + env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));z-index:160;width:40px;height:40px;padding:0;border:0;border-radius:50%;background:var(--glass);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:var(--tx);font-size:17px;align-items:center;justify-content:center}
+#stage.fs{position:fixed;inset:0;z-index:100;height:100dvh;background:var(--bg);justify-content:center;padding:calc(56px + env(safe-area-inset-top)) 8px 100px}
+#stage.fs #exit{display:flex}
+#stage.fs .panel{padding-right:48px}
+#fab{position:fixed;right:max(14px,env(safe-area-inset-right));bottom:calc(14px + env(safe-area-inset-bottom));z-index:150;display:flex;gap:10px;align-items:center}
+#stage.vw~#fab{display:none}#stage.fs~#fab #fsb{display:none!important}
+.fb{height:52px;border:0;border-radius:26px;font-size:17px;font-weight:600;display:flex;align-items:center;gap:8px;padding:0 22px;background:var(--tint);color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.3)}
+.fb.sm{width:52px;padding:0;justify-content:center;background:var(--glass);color:var(--tx);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);font-size:24px}
+#fm{position:absolute;right:0;bottom:64px;min-width:230px;border-radius:14px;background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);box-shadow:0 10px 30px rgba(0,0,0,.3);overflow:hidden;opacity:0;transform:scale(.9) translateY(10px);transform-origin:bottom right;pointer-events:none;transition:.18s}
+#fm.on{opacity:1;transform:none;pointer-events:auto}
+.mi{display:block;width:100%;text-align:left;padding:15px 16px;border:0;border-bottom:.5px solid var(--sep);background:none;font-size:17px;color:var(--tx)}.mi:last-child{border:0}.mi.reset{color:var(--red)}
+#sheet{position:fixed;inset:0;z-index:200;pointer-events:none}
+#sheet .bd{position:absolute;inset:0;background:rgba(0,0,0,.4);opacity:0;transition:.25s}
+#sheet .pn{position:absolute;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;max-height:90dvh;overflow:auto;border-radius:20px 20px 0 0;background:var(--bg);padding:8px 16px calc(20px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .32s cubic-bezier(.2,.8,.2,1)}
+#sheet.on{pointer-events:auto}#sheet.on .bd{opacity:1}#sheet.on .pn{transform:none}
+.grab{width:38px;height:5px;border-radius:3px;background:var(--sep);margin:0 auto 12px}
+#sheet h3{margin:0 4px 10px;font-size:22px}#sheet h4{margin:14px 14px 6px;font-size:12px;color:var(--tx2);text-transform:uppercase;font-weight:600}
+.grp{background:var(--box);border-radius:12px;overflow:hidden}
+.tab{display:flex;align-items:center;gap:12px;width:100%;min-height:58px;padding:8px 14px;border:0;border-bottom:.5px solid var(--sep);background:none;text-align:left;color:var(--tx)}.tab:last-child{border:0}.tab:active{background:var(--fill)}
+.ic{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;font-style:normal;flex:none}
+.tab span{flex:1;min-width:0}.tab b{display:block;font-size:17px;font-weight:500}.tab small{font-size:12px;color:var(--tx2)}
+.tab em{font-style:normal;color:var(--tint);font-weight:700;opacity:0}.tab.active em{opacity:1}
+#toast{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top));transform:translate(-50%,-20px);z-index:300;max-width:90vw;padding:12px 16px;border-radius:14px;background:var(--glass);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:15px;opacity:0;pointer-events:none;transition:.25s;text-align:center}
+#toast.on{opacity:1;transform:translate(-50%,0)}
 </style>
 </head>
 <body>
-<div class="container">
-<h2>Simulador de Go Profesional</h2>
-<div class="tabs">
-<button id="t-free" class="tab active" onclick="setMode('free')">Libre</button>
-<button id="t-bot" class="tab" onclick="setMode('bot')">1 Jugador</button>
-<button id="t-tut" class="tab" onclick="setMode('tut')">Tutorial</button>
-<button id="t-libs" class="tab" onclick="setMode('libs')">Libertades</button>
-<button id="t-cap" class="tab" onclick="setMode('cap')">Captura</button>
-<button id="t-eyes" class="tab" onclick="setMode('eyes')">Dos Ojos</button>
-</div>
-<div class="opts">
-<label>Tablero <select id="sz" onchange="chSize(+this.value)"><option value="9">9×9</option><option value="13">13×13</option><option value="19">19×19</option></select></label>
+<header id="nav"><button class="ib" onclick="menu(1)" aria-label="Menú">☰</button><div class="tt"><b id="ttl">Modo Libre</b><small>Simulador de Go</small></div><i class="ib sp"></i></header>
+<main class="container">
+<div class="opts box">
+<label>Tablero<select id="sz" onchange="chSize(+this.value)"><option value="9">9×9</option><option value="13">13×13</option><option value="19">19×19</option></select></label>
 <span id="bo" style="display:none">
-<label>Tú juegas con <select id="me" onchange="chBot()"><option value="1">Negras (empiezas)</option><option value="2">Blancas</option></select></label>
-<label>Nivel <select id="lv" onchange="chBot()"><option value="easy">Fácil</option><option value="mid" selected>Medio</option><option value="pro">Pro</option></select></label>
+<label>Juegas con<select id="me" onchange="chBot()"><option value="1">Negras</option><option value="2">Blancas</option></select></label>
+<label>Nivel<select id="lv" onchange="chBot()"><option value="easy">Fácil</option><option value="mid" selected>Medio</option><option value="pro">Pro</option></select></label>
 </span>
 </div>
-<div id="tp" class="opts" style="display:none;justify-content:center"><button class="btn pass" onclick="tgo(-1)">◀ Anterior</button><select id="tl" onchange="lesson(+this.value)"></select><button class="btn pass" onclick="tgo(1)">Siguiente ▶</button></div>
-<div class="desc" id="text"></div>
+<div id="tp" class="box" style="display:none"><button class="btn" onclick="tgo(-1)">◀</button><select id="tl" onchange="lesson(+this.value)"></select><button class="btn" onclick="tgo(1)">▶</button></div>
+<details id="dd" class="box"><summary>Instrucciones</summary><div id="text"></div></details>
+<div id="stage"><button id="exit" onclick="toggleFS()" aria-label="Salir de pantalla completa">✕</button>
 <div class="panel"><div id="turn">Turno: Negras</div><div id="score">B: 0 | W: 0</div></div>
-<div id="stage"><button id="exit" onclick="toggleFS()" title="Salir de pantalla completa">✕</button><div class="board-wrapper"><div class="grid-lines" id="lines"></div><div class="intersections" id="pts"></div></div>
-<div id="vp"><div id="vt"></div><div class="vr"><button class="btn pass" onclick="vshow(0)">◀ Antes</button><button class="btn pass" onclick="vshow(1)">Después ▶</button><button class="btn reset" onclick="closeView()">✕ Volver al juego</button></div></div>
-<div class="btns">
-<button class="btn pass" onclick="pass()">⏭ Pasar turno</button>
-<button class="btn reset" onclick="reset()">↻ Reiniciar</button>
-<button id="vb" class="btn vb" onclick="showLast()">👁 Última jugada</button>
-<button id="fsb" class="btn fsb" onclick="toggleFS()">⛶ Pantalla completa</button>
+<div class="bw" id="bw"><canvas id="lines"></canvas><div class="intersections" id="pts"></div></div>
+<div id="vp"><div id="vt"></div><div class="vr"><button class="btn" onclick="vshow(0)">◀ Antes</button><button class="btn" onclick="vshow(1)">Después ▶</button><button class="btn reset" onclick="closeView()">✕ Volver</button></div></div>
 </div>
-</div>
-</div>
+<div id="fab"><div id="fm">
+<button id="vb" class="mi" style="display:none" onclick="fab(0);showLast()">👁  Última jugada</button>
+<button id="fsb" class="mi" style="display:none" onclick="fab(0);toggleFS()">⛶  Pantalla completa</button>
+<button class="mi reset" onclick="fab(0);reset()">↻  Reiniciar</button></div>
+<button class="fb sm" onclick="fab()" aria-label="Más acciones">⋯</button>
+<button class="fb" onclick="fab(0);pass()">⏭ Pasar</button></div>
+</main>
+<div id="sheet"><div class="bd" onclick="menu(0)"></div><div class="pn"><div class="grab"></div><h3>Modos</h3>
+<h4>Jugar</h4><div class="grp"><button id="t-free" class="tab" onclick="setMode('free')"><i class="ic" style="background:#8e8e93">⚪</i><span><b>Libre</b><small>Dos jugadores, mismo dispositivo</small></span><em>✓</em></button><button id="t-bot" class="tab" onclick="setMode('bot')"><i class="ic" style="background:#34c759">🤖</i><span><b>1 Jugador</b><small>Contra la app, 3 niveles</small></span><em>✓</em></button></div>
+<h4>Aprender</h4><div class="grp"><button id="t-tut" class="tab" onclick="setMode('tut')"><i class="ic" style="background:#007aff">📖</i><span><b>Tutorial</b><small>Lecciones paso a paso</small></span><em>✓</em></button><button id="t-libs" class="tab" onclick="setMode('libs')"><i class="ic" style="background:#ff3b30">🔴</i><span><b>Libertades</b><small>Cuenta las respiraciones</small></span><em>✓</em></button><button id="t-cap" class="tab" onclick="setMode('cap')"><i class="ic" style="background:#ff9500">🎯</i><span><b>Captura</b><small>Rodea y captura</small></span><em>✓</em></button><button id="t-eyes" class="tab" onclick="setMode('eyes')"><i class="ic" style="background:#af52de">👀</i><span><b>Dos Ojos</b><small>Vida y muerte</small></span><em>✓</em></button></div></div></div>
+<div id="toast"></div>
 <script>
 const $=id=>document.getElementById(id),CS={9:40,13:32,19:24},KOMI=7.5;
 let hist=[],view=null,vtm=0,N=9,NB=[],cells=[],board,ko=-1,lastKo=-1,turn=1,mode='free',caps={b:0,w:0},markers=[],last=-1,passes=0,over=false,gen=0,busy=false,me=1,level='mid',pend=0;
@@ -84,16 +115,17 @@ let hist=[],view=null,vtm=0,N=9,NB=[],cells=[],board,ko=-1,lastKo=-1,turn=1,mode
 /* ---------- Tablero / UI ---------- */
 function buildNB(){NB=[];for(let i=0;i<N*N;i++){const r=(i/N)|0,c=i%N,a=[];if(r>0)a.push(i-N);if(r<N-1)a.push(i+N);if(c>0)a.push(i-1);if(c<N-1)a.push(i+1);NB.push(a)}}
 function hoshi(){const e=N==9?[2,6]:N==13?[3,9]:[3,9,15],h=new Set([(N>>1)*N+(N>>1)]);e.forEach(r=>e.forEach(c=>h.add(r*N+c)));return h}
-function csFor(){
- const fs=$('stage')&&$('stage').classList.contains('fs');
- if(fs)return Math.max(14,Math.min(80,Math.floor(Math.min(innerWidth-16,innerHeight-110)/(N+1.3))));
- return Math.max(14,Math.min(CS[N],Math.floor((innerWidth-80)/(N+1.3))))}
+function drawLines(cs){const c=$('lines'),W=N*cs,d=Math.min(devicePixelRatio||1,3),x=c.getContext('2d'),lw=Math.max(1,Math.round(1.25*d)),o=lw%2?.5:0,a=Math.round(cs/2*d),z=Math.round((W-cs/2)*d);
+ c.width=c.height=Math.round(W*d);c.style.width=c.style.height=W+'px';
+ x.strokeStyle='#4a3319';x.lineWidth=lw;x.beginPath();
+ for(let k=0;k<N;k++){const p=Math.round((cs/2+k*cs)*d)+o;x.moveTo(a,p);x.lineTo(z,p);x.moveTo(p,a);x.lineTo(p,z)}x.stroke()}
+function csFor(){const fs=$('stage').classList.contains('fs');
+ const a=fs?Math.min(innerWidth-16,innerHeight-220)/N:Math.min((Math.min(innerWidth,640)-24)/N,{9:56,13:44,19:34}[N]);
+ return Math.max(14,Math.floor(a/2)*2)}
 function setSize(n){
- N=n;buildNB();const cs=csFor(),w=(N-1)*cs,W=N*cs;
+ N=n;buildNB();const cs=csFor(),W=N*cs,P=$('pts'),B=$('bw');
  document.documentElement.style.setProperty('--cs',cs+'px');$('sz').value=n;
- const L=$('lines'),P=$('pts');
- L.style.cssText=`width:${w}px;height:${w}px;grid-template-columns:repeat(${N-1},${cs}px);grid-template-rows:repeat(${N-1},${cs}px)`;
- L.innerHTML='<div class="cell"></div>'.repeat((N-1)*(N-1));
+ B.style.width=B.style.height=W+'px';drawLines(cs);
  P.style.cssText=`width:${W}px;height:${W}px;grid-template-columns:repeat(${N},${cs}px);grid-template-rows:repeat(${N},${cs}px)`;
  P.innerHTML='';cells=[];const hs=hoshi();
  for(let i=0;i<N*N;i++){const d=document.createElement('div');d.className='pt'+(hs.has(i)?' h':'');d.onclick=()=>click(i);P.appendChild(d);cells.push(d)}
@@ -145,9 +177,9 @@ function click(i){
  move(i)}
 function move(i){
  if(board[i])return false;
- if(i===ko){alert("Regla del Ko: no puedes recapturar de inmediato. Juega en otro lugar primero.");return false}
+ if(i===ko){toast("Regla del Ko: no puedes recapturar de inmediato. Juega en otro lugar primero.");return false}
  const col=turn,prev=board.slice(),c=play(board,i,col);
- if(c<0){alert("¡Movimiento Suicidio prohibido!");return false}
+ if(c<0){toast("¡Movimiento Suicidio prohibido!");return false}
  ko=lastKo;if(col==1)caps.b+=c;else caps.w+=c;
  last=i;passes=0;turn=3-col;
  const cap=[];for(let k=0;k<N*N;k++)if(prev[k]&&!board[k])cap.push(k);hist.push({prev,after:board.slice(),col,i,cap});
@@ -161,7 +193,7 @@ function endGame(){over=true;const[B,W]=areaScore(board),d=B-W-KOMI;render();
  msg(`<strong>Fin de la partida.</strong> Negras ${B} · Blancas ${W} (+${KOMI} komi) → ${d>0?'Ganan las <b>Negras</b> por '+d:'Ganan las <b>Blancas</b> por '+(-d)} puntos (conteo por área). Las piedras muertas no se retiran solas: captúralas antes de pasar.`)}
 function afterMove(){if(mode==='bot'&&!over&&turn!==me){clearTimeout(pend);pend=setTimeout(botTurn,60)}}
 
-function setMode(m){
+function setMode(m){uiMode(m);
  mode=m;document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));$(`t-${m}`).classList.add('active');
  const free=m==='free'||m==='bot';
  if(!free)setSize(9);else if(!cells.length)setSize(N);
@@ -169,7 +201,7 @@ function setMode(m){
  me=+$('me').value;level=$('lv').value;newGame();
  const txt={
   tut:"",free:"Modo Libre: Las piedras se colocan exactamente en las intersecciones. Mueven primero las negras. Elige el tablero (9×9, 13×13 o 19×19). Capturas, suicidio y ko calculados automáticamente. Dos pases seguidos terminan la partida.",
-  bot:"Modo 1 Jugador: juegas contra la app. Elige tablero, tu color y el nivel (Fácil: juega por intuición básica; Medio: búsqueda corta; Pro: búsqueda Monte Carlo profunda). Se cuenta por área con komi 7.5. Si pasas y la app va ganando, ella también pasa. Usa «👁 Última jugada» para revisar qué hizo el bot (antes/después, con las capturas marcadas) sin alterar la partida.",
+  bot:"Modo 1 Jugador: juegas contra la app. Elige tablero, tu color y el nivel (Fácil: juega por intuición básica; Medio: búsqueda corta; Pro: búsqueda Monte Carlo profunda). Se cuenta por área con komi 7.5. Si pasas y la app va ganando, ella también pasa. Usa «👁 Última jugada» (menú ⋯) para revisar qué hizo el bot (antes/después, con las capturas marcadas) sin alterar la partida.",
   libs:"Escenario Libertades: Los puntos rojos muestran las libertades (respiraciones). En el centro hay 4, en el borde 3 y en la esquina solo 2. (Escenario fijo en 9×9.)",
   cap:"Escenario Captura: Las blancas rodean a la negra. Haz clic en el punto rojo (intersección central 4,4) para capturarla. (Escenario fijo en 9×9.)",
   eyes:"Escenario Dos Ojos JUGABLE (9×9): Eres Blancas. Intenta rellenar los dos ojos del grupo negro de la esquina superior izquierda: ¡el juego no te deja por la regla del suicidio! Luego juega el único hueco del grupo inferior (Un ojo)... ¡ahí sí podrás capturarlo todo!"}[m];
@@ -257,7 +289,7 @@ function exitFS(){
 function showLast(){
  if(busy||view)return;
  let e=null;for(let k=hist.length-1;k>=0;k--)if(mode!=='bot'||hist[k].col!==me){e=hist[k];break}
- if(!e){alert('Aún no hay jugadas para revisar.');return}
+ if(!e){toast('Aún no hay jugadas para revisar.');return}
  view={e,st:0};$('vp').style.display='flex';$('stage').classList.add('vw');
  vshow(0);vtm=setTimeout(()=>vshow(1),1300)}
 function vshow(st){
@@ -267,7 +299,7 @@ function vshow(st){
  $('vt').innerHTML=e.pass?`<b>${who}</b> pasaron`:st?`<b>${who}</b> jugaron${pos}`+(e.cap.length?` y <b style="color:#d9302c">capturaron ${e.cap.length} piedra${e.cap.length>1?'s':''}</b> (✕)`:''):`Antes de la jugada de <b>${who}</b>${pos}`;
  render()}
 function closeView(){clearTimeout(vtm);view=null;$('vp').style.display='none';$('stage').classList.remove('vw');render()}
-function fit(){setSize(N);render()}
+function fit(){if(csFor()+'px'===document.documentElement.style.getPropertyValue('--cs'))return;setSize(N);render()}
 ['fullscreenchange','webkitfullscreenchange'].forEach(e=>document.addEventListener(e,()=>{
  if(!document.fullscreenElement&&!document.webkitFullscreenElement&&$('stage').classList.contains('fs'))exitFS()}));
 let rz;addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(fit,150)});
@@ -298,6 +330,16 @@ const L=[
 function lesson(k){tk=k;const l=L[k];newGame();turn=l.turn||1;(l.b||[]).forEach(([r,c,v])=>board[r*N+c]=v);markers=(l.m||[]).map(([r,c])=>r*N+c);$('tl').value=k;msg(`<strong>Lección ${k+1}/${L.length}: ${l.t}</strong><br>${l.d}`);render()}
 function tgo(d){lesson(Math.max(0,Math.min(L.length-1,tk+d)))}
 $('tl').innerHTML=L.map((l,i)=>`<option value="${i}">${i+1}. ${l.t}</option>`).join('');
+const TT={free:'Modo Libre',bot:'1 Jugador',tut:'Tutorial',libs:'Libertades',cap:'Captura',eyes:'Dos Ojos'};
+function uiMode(m){$('ttl').textContent=TT[m];menu(0);fab(0);$('dd').open=(m!=='free'&&m!=='bot')||innerWidth>700;scrollTo(0,0)}
+function menu(o){$('sheet').classList.toggle('on',!!o);document.body.classList.toggle('lock',!!o)}
+function fab(o){$('fm').classList.toggle('on',o===undefined?!$('fm').classList.contains('on'):!!o)}
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('#fab'))fab(0)});
+let tt;function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('on'),2600)}
+(()=>{const c=document.querySelector('#sheet .pn');let y=null;
+ c.addEventListener('touchstart',e=>{if(c.scrollTop<=0)y=e.touches[0].clientY},{passive:true});
+ c.addEventListener('touchmove',e=>{if(y===null)return;const d=e.touches[0].clientY-y;if(d>0){c.style.transition='none';c.style.transform=`translateY(${d}px)`}},{passive:true});
+ c.addEventListener('touchend',e=>{if(y===null)return;const d=e.changedTouches[0].clientY-y;y=null;c.style.transition='';c.style.transform='';if(d>80)menu(0)})})();
 setMode('free');
 </script>
 </body>
