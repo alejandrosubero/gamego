@@ -59,7 +59,7 @@ summary::after{content:'›';transform:rotate(90deg);transition:.2s}details[open
 #stage.fs #exit{display:flex}
 #stage.fs .panel{padding-right:48px}
 #fab{position:fixed;right:max(14px,env(safe-area-inset-right));bottom:calc(14px + env(safe-area-inset-bottom));z-index:150;display:flex;gap:10px;align-items:center}
-#stage.vw~#fab{display:none}#stage.fs~#fab #fsb{display:none!important}
+#stage.vw #fab{display:none}#stage.fs #fab #fsb{display:none!important}
 .fb{height:52px;border:0;border-radius:26px;font-size:17px;font-weight:600;display:flex;align-items:center;gap:8px;padding:0 22px;background:var(--tint);color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.3)}
 .fb.sm{width:52px;padding:0;justify-content:center;background:var(--glass);color:var(--tx);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);font-size:24px}
 #fm{position:absolute;right:0;bottom:64px;min-width:230px;border-radius:14px;background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);box-shadow:0 10px 30px rgba(0,0,0,.3);overflow:hidden;opacity:0;transform:scale(.9) translateY(10px);transform-origin:bottom right;pointer-events:none;transition:.18s}
@@ -78,6 +78,33 @@ summary::after{content:'›';transform:rotate(90deg);transition:.2s}details[open
 .tab em{font-style:normal;color:var(--tint);font-weight:700;opacity:0}.tab.active em{opacity:1}
 #toast{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top));transform:translate(-50%,-20px);z-index:300;max-width:90vw;padding:12px 16px;border-radius:14px;background:var(--glass);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:15px;opacity:0;pointer-events:none;transition:.25s;text-align:center}
 #toast.on{opacity:1;transform:translate(-50%,0)}
+
+.bw{background:var(--wood);background:repeating-linear-gradient(90deg,rgba(110,60,15,.06) 0 2px,transparent 2px 7px),repeating-linear-gradient(88deg,rgba(255,255,255,.05) 0 1px,transparent 1px 11px),linear-gradient(135deg,var(--wood),color-mix(in srgb,var(--wood) 82%,#6b3f10))}
+.stone.black{box-shadow:0 2px 3px rgba(0,0,0,.5),0 6px 8px -2px rgba(0,0,0,.35),inset 0 -2px 3px rgba(0,0,0,.4)}
+.stone.white{box-shadow:0 2px 3px rgba(0,0,0,.3),0 6px 8px -2px rgba(0,0,0,.25),inset 0 -2px 3px rgba(0,0,0,.12)}
+.stone.last::after{width:38%;height:38%;background:transparent;border:max(1.5px,calc(var(--cs)*.06)) solid #ff5a4d;animation:pl 1s ease-in-out 2}
+.stone.last{animation:drop .22s ease-out}
+.stone.ghost{opacity:.55;box-shadow:0 0 0 2px var(--tint)}
+.stone.out{position:absolute;animation:out .45s ease-out forwards}
+@keyframes drop{from{transform:scale(1.3);opacity:.4}to{transform:none;opacity:1}}
+@keyframes out{to{transform:scale(.5);opacity:0}}
+@keyframes pl{50%{transform:translate(-50%,-50%) scale(1.5)}}
+@keyframes ind{0%,100%{transform:translateX(0)}50%{transform:translateX(233%)}}
+#turn::before{content:'';display:inline-block;width:.85em;height:.85em;border-radius:50%;margin-right:8px;vertical-align:-1px;background:#111;box-shadow:inset 0 0 0 1px #888}
+#turn[data-t="2"]::before{background:#fff}#turn[data-t="0"]::before{display:none}
+.sd{display:inline-block;width:.85em;height:.85em;border-radius:50%;background:#111;box-shadow:inset 0 0 0 1px #888;vertical-align:-1px}.sd.w{background:#fff}
+.panel{position:relative}.panel.think::after{content:'';position:absolute;left:0;bottom:-7px;height:3px;width:30%;border-radius:2px;background:var(--tint);animation:ind 1.1s ease-in-out infinite}
+#tp{flex-wrap:wrap}.pb{flex-basis:100%;height:4px;border-radius:2px;background:var(--fill);overflow:hidden}.pb i{display:block;height:100%;width:0;background:var(--tint);transition:width .3s}
+#md{position:fixed;inset:0;z-index:250;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:.2s}#md.on{opacity:1;pointer-events:auto}
+.mb{width:100%;max-width:340px;background:var(--glass);-webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px);border-radius:20px;padding:20px;text-align:center;transform:scale(.92);transition:.2s}#md.on .mb{transform:none}
+.mb h3{margin:0 0 10px;font-size:20px}.mb p{margin:10px 0 0;font-size:14px;color:var(--tx2)}
+#mbn{display:flex;gap:8px;margin-top:16px}#mbn .btn{flex:1;height:44px}#mbn .btn.pri{background:var(--tint);color:#fff}
+.rs{display:flex;gap:10px}.rs>div{flex:1;border-radius:12px;padding:10px;background:var(--fill);opacity:.7}.rs>div.win{opacity:1;box-shadow:0 0 0 2px var(--tint)}.rs b{display:block;font-size:24px;margin:4px 0}.rs small{color:var(--tx2);font-size:12px}
+@media(orientation:landscape) and (max-height:500px){.container{max-width:none;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start}.container>*{grid-column:2}.container>#stage{grid-column:1;grid-row:1/span 6;width:auto}#stage.fs{padding-bottom:8px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+#turn::before{display:none!important}
+.sd.lg{width:1.5em;height:1.5em;vertical-align:-5px;box-shadow:inset 0 0 0 1px #888,0 1px 3px rgba(0,0,0,.35)}
+#turn small{font-size:13px;color:var(--tx2);margin-left:6px;font-weight:600}
 </style>
 </head>
 <body>
@@ -90,24 +117,26 @@ summary::after{content:'›';transform:rotate(90deg);transition:.2s}details[open
 <label>Nivel<select id="lv" onchange="chBot()"><option value="easy">Fácil</option><option value="mid" selected>Medio</option><option value="pro">Pro</option></select></label>
 </span>
 </div>
-<div id="tp" class="box" style="display:none"><button class="btn" onclick="tgo(-1)">◀</button><select id="tl" onchange="lesson(+this.value)"></select><button class="btn" onclick="tgo(1)">▶</button></div>
+<div id="tp" class="box" style="display:none"><button class="btn" onclick="tgo(-1)">◀</button><select id="tl" onchange="lesson(+this.value)"></select><button class="btn" onclick="tgo(1)">▶</button><div class="pb"><i id="pbar"></i></div></div>
 <details id="dd" class="box"><summary>Instrucciones</summary><div id="text"></div></details>
 <div id="stage"><button id="exit" onclick="toggleFS()" aria-label="Salir de pantalla completa">✕</button>
-<div class="panel"><div id="turn">Turno: Negras</div><div id="score">B: 0 | W: 0</div></div>
+<div class="panel"><div id="turn" aria-live="polite">Turno: Negras</div><div id="score">B: 0 | W: 0</div></div>
 <div class="bw" id="bw"><canvas id="lines"></canvas><div class="intersections" id="pts"></div></div>
 <div id="vp"><div id="vt"></div><div class="vr"><button class="btn" onclick="vshow(0)">◀ Antes</button><button class="btn" onclick="vshow(1)">Después ▶</button><button class="btn reset" onclick="closeView()">✕ Volver</button></div></div>
-</div>
 <div id="fab"><div id="fm">
 <button id="vb" class="mi" style="display:none" onclick="fab(0);showLast()">👁  Última jugada</button>
 <button id="fsb" class="mi" style="display:none" onclick="fab(0);toggleFS()">⛶  Pantalla completa</button>
 <button class="mi reset" onclick="fab(0);reset()">↻  Reiniciar</button></div>
 <button class="fb sm" onclick="fab()" aria-label="Más acciones">⋯</button>
-<button class="fb" onclick="fab(0);pass()">⏭ Pasar</button></div>
+<button class="fb" onclick="fab(0);askPass()">⏭ Pasar</button></div>
+<div id="md"><div class="mb"><h3 id="mt"></h3><div id="mh"></div><div id="mbn"></div></div></div>
+<div id="toast"></div>
+</div>
 </main>
 <div id="sheet"><div class="bd" onclick="menu(0)"></div><div class="pn"><div class="grab"></div><h3>Modos</h3>
 <h4>Jugar</h4><div class="grp"><button id="t-free" class="tab" onclick="setMode('free')"><i class="ic" style="background:#8e8e93">⚪</i><span><b>Libre</b><small>Dos jugadores, mismo dispositivo</small></span><em>✓</em></button><button id="t-bot" class="tab" onclick="setMode('bot')"><i class="ic" style="background:#34c759">🤖</i><span><b>1 Jugador</b><small>Contra la app, 3 niveles</small></span><em>✓</em></button></div>
 <h4>Aprender</h4><div class="grp"><button id="t-tut" class="tab" onclick="setMode('tut')"><i class="ic" style="background:#007aff">📖</i><span><b>Tutorial</b><small>Lecciones paso a paso</small></span><em>✓</em></button><button id="t-libs" class="tab" onclick="setMode('libs')"><i class="ic" style="background:#ff3b30">🔴</i><span><b>Libertades</b><small>Cuenta las respiraciones</small></span><em>✓</em></button><button id="t-cap" class="tab" onclick="setMode('cap')"><i class="ic" style="background:#ff9500">🎯</i><span><b>Captura</b><small>Rodea y captura</small></span><em>✓</em></button><button id="t-eyes" class="tab" onclick="setMode('eyes')"><i class="ic" style="background:#af52de">👀</i><span><b>Dos Ojos</b><small>Vida y muerte</small></span><em>✓</em></button></div></div></div>
-<div id="toast"></div>
+
 <script>
 const $=id=>document.getElementById(id),CS={9:40,13:32,19:24},KOMI=7.5;
 let hist=[],view=null,vtm=0,N=9,NB=[],cells=[],board,ko=-1,lastKo=-1,turn=1,mode='free',caps={b:0,w:0},markers=[],last=-1,passes=0,over=false,gen=0,busy=false,me=1,level='mid',pend=0;
@@ -118,9 +147,11 @@ function hoshi(){const e=N==9?[2,6]:N==13?[3,9]:[3,9,15],h=new Set([(N>>1)*N+(N>
 function drawLines(cs){const c=$('lines'),W=N*cs,d=Math.min(devicePixelRatio||1,3),x=c.getContext('2d'),lw=Math.max(1,Math.round(1.25*d)),o=lw%2?.5:0,a=Math.round(cs/2*d),z=Math.round((W-cs/2)*d);
  c.width=c.height=Math.round(W*d);c.style.width=c.style.height=W+'px';
  x.strokeStyle='#4a3319';x.lineWidth=lw;x.beginPath();
- for(let k=0;k<N;k++){const p=Math.round((cs/2+k*cs)*d)+o;x.moveTo(a,p);x.lineTo(z,p);x.moveTo(p,a);x.lineTo(p,z)}x.stroke()}
+ for(let k=0;k<N;k++){const p=Math.round((cs/2+k*cs)*d)+o;x.moveTo(a,p);x.lineTo(z,p);x.moveTo(p,a);x.lineTo(p,z)}x.stroke();
+ if(cs>=18){x.font=`600 ${Math.max(8,Math.round(cs*.3))*d}px -apple-system,system-ui,sans-serif`;x.fillStyle='rgba(74,51,25,.75)';x.textAlign='center';x.textBaseline='middle';
+  for(let k=0;k<N;k++){const q=(cs/2+k*cs)*d;x.fillText('ABCDEFGHJKLMNOPQRST'[k],q,(W-cs/4)*d);x.fillText(N-k,cs/4*d,q)}}}
 function csFor(){const fs=$('stage').classList.contains('fs');
- const a=fs?Math.min(innerWidth-16,innerHeight-220)/N:Math.min((Math.min(innerWidth,640)-24)/N,{9:56,13:44,19:34}[N]);
+ const ls=innerWidth>innerHeight&&innerHeight<500,a=fs?Math.min(innerWidth-16,innerHeight-(ls?100:220))/N:ls?(innerHeight-120)/N:Math.min((Math.min(innerWidth,640)-24)/N,{9:56,13:44,19:34}[N]);
  return Math.max(14,Math.floor(a/2)*2)}
 function setSize(n){
  N=n;buildNB();const cs=csFor(),W=N*cs,P=$('pts'),B=$('bw');
@@ -128,7 +159,7 @@ function setSize(n){
  B.style.width=B.style.height=W+'px';drawLines(cs);
  P.style.cssText=`width:${W}px;height:${W}px;grid-template-columns:repeat(${N},${cs}px);grid-template-rows:repeat(${N},${cs}px)`;
  P.innerHTML='';cells=[];const hs=hoshi();
- for(let i=0;i<N*N;i++){const d=document.createElement('div');d.className='pt'+(hs.has(i)?' h':'');d.onclick=()=>click(i);P.appendChild(d);cells.push(d)}
+ for(let i=0;i<N*N;i++){const d=document.createElement('div');d.className='pt'+(hs.has(i)?' h':'');d.onclick=()=>tap(i);d.setAttribute('role','button');d.setAttribute('aria-label','ABCDEFGHJKLMNOPQRST'[i%N]+(N-((i/N)|0)));P.appendChild(d);cells.push(d)}
 }
 function newGame(){hist=[];view=null;clearTimeout(vtm);$('vp').style.display='none';$('stage').classList.remove('vw');clearTimeout(pend);gen++;busy=false;board=new Int8Array(N*N);ko=-1;turn=1;caps={b:0,w:0};markers=[];last=-1;passes=0;over=false}
 function msg(t){$('text').innerHTML=t}
@@ -189,7 +220,7 @@ function doPass(){
  hist.push({pass:true,col:turn});passes++;ko=-1;last=-1;turn=3-turn;
  if(passes>=2&&(mode==='free'||mode==='bot')){endGame();return}
  render();afterMove()}
-function endGame(){over=true;const[B,W]=areaScore(board),d=B-W-KOMI;render();
+function endGame(){over=true;const[B,W]=areaScore(board),d=B-W-KOMI;render();showResult(B,W,d);
  msg(`<strong>Fin de la partida.</strong> Negras ${B} · Blancas ${W} (+${KOMI} komi) → ${d>0?'Ganan las <b>Negras</b> por '+d:'Ganan las <b>Blancas</b> por '+(-d)} puntos (conteo por área). Las piedras muertas no se retiran solas: captúralas antes de pasar.`)}
 function afterMove(){if(mode==='bot'&&!over&&turn!==me){clearTimeout(pend);pend=setTimeout(botTurn,60)}}
 
@@ -340,6 +371,29 @@ let tt;function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on'
  c.addEventListener('touchstart',e=>{if(c.scrollTop<=0)y=e.touches[0].clientY},{passive:true});
  c.addEventListener('touchmove',e=>{if(y===null)return;const d=e.touches[0].clientY-y;if(d>0){c.style.transition='none';c.style.transform=`translateY(${d}px)`}},{passive:true});
  c.addEventListener('touchend',e=>{if(y===null)return;const d=e.changedTouches[0].clientY-y;y=null;c.style.transition='';c.style.transform='';if(d>80)menu(0)})})();
+let sel=-1,fh=0,hinted=0;
+function tap(i){
+ const ok=!(busy||over||view||board[i])&&!(mode==='bot'&&turn!==me)&&mode!=='libs'&&mode!=='cap';
+ if(ok&&matchMedia('(pointer:coarse)').matches&&N>9){if(sel!==i){sel=i;render();if(!hinted){hinted=1;toast('Toca de nuevo para confirmar')}return}sel=-1}
+ click(i)}
+const _r=render;render=function(){_r();
+ if(!$('turn').textContent.includes('Pensando')){const t=$('turn');t.dataset.t=over?0:turn;
+  t.innerHTML=over?'Partida terminada':`<i class="sd lg ${turn==1?'b':'w'}"></i>`+(mode==='bot'?`<small>${turn==me?'(tú)':'(bot)'}</small>`:'');
+  t.setAttribute('aria-label',over?'Partida terminada':'Turno: '+(turn==1?'Negras':'Blancas'))}
+ $('score').innerHTML=`<i class="sd b"></i> ${caps.b} &nbsp; <i class="sd w"></i> ${caps.w}`;
+ if(sel>=0&&(board[sel]||over||view||busy||(mode==='bot'&&turn!==me)))sel=-1;
+ if(sel>=0){const g=document.createElement('div');g.className='stone ghost '+(turn==1?'black':'white');cells[sel].appendChild(g)}
+ if(!view&&hist.length!==fh){fh=hist.length;const e=hist[fh-1];if(e&&e.cap)e.cap.forEach(i=>{const o=document.createElement('div');o.className='stone out '+(e.col==1?'white':'black');cells[i].appendChild(o)})}};
+new MutationObserver(()=>document.querySelector('.panel').classList.toggle('think',$('turn').textContent.includes('Pensando'))).observe($('turn'),{childList:true,characterData:true,subtree:true});
+function modal(t,h,bs){$('mt').textContent=t;$('mh').innerHTML=h;const b=$('mbn');b.innerHTML='';
+ bs.forEach(o=>{const e=document.createElement('button');e.className='btn'+(o.p?' pri':'');e.textContent=o.t;e.onclick=()=>{$('md').classList.remove('on');o.f&&o.f()};b.appendChild(e)});$('md').classList.add('on')}
+function showResult(B,W,d){const k=d>0;modal(k?'Ganan las Negras':'Ganan las Blancas',`<div class="rs"><div class="${k?'win':''}"><i class="sd b"></i><b>${B}</b><small>Negras</small></div><div class="${k?'':'win'}"><i class="sd w"></i><b>${W}+${KOMI}</b><small>Blancas (komi)</small></div></div><p>Ventaja de ${Math.abs(d)} puntos · conteo por área. Las piedras muertas no se retiran solas.</p>`,[{t:'Revisar tablero'},{t:'Nueva partida',p:1,f:reset}])}
+function askPass(){if((mode==='free'||mode==='bot')&&passes>=1&&!over&&!busy&&!view&&(mode!=='bot'||turn===me))modal('¿Pasar turno?','Tu rival ya pasó. Si pasas ahora, la partida termina y se cuenta.',[{t:'Cancelar'},{t:'Pasar y terminar',p:1,f:pass}]);else pass()}
+const _l=lesson;lesson=function(k){_l(k);$('pbar').style.width=((k+1)/L.length*100)+'%'};
+(()=>{const d=$('dd');let x=null;d.addEventListener('touchstart',e=>x=e.touches[0].clientX,{passive:true});
+ d.addEventListener('touchend',e=>{if(x===null||mode!=='tut')return;const dx=e.changedTouches[0].clientX-x;x=null;if(Math.abs(dx)>70)tgo(dx<0?1:-1)})})();
+try{const v=JSON.parse(localStorage.go||'{}');if(v.n)N=v.n;if(v.me)$('me').value=v.me;if(v.lv)$('lv').value=v.lv}catch(e){}
+document.addEventListener('change',()=>{try{localStorage.go=JSON.stringify({n:N,me:+$('me').value,lv:$('lv').value})}catch(e){}});
 setMode('free');
 </script>
 </body>
